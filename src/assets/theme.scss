@@ -1,0 +1,29 @@
+@use "sass:map";
+
+// Importa funções e variáveis padrão do Bootstrap
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+
+// Paleta principal do template (inspirada em dashboards modernos)
+$primary: #4f46e5; // Indigo
+$secondary: #64748b; // Slate
+$success: #16a34a;
+$info: #0ea5e9;
+$warning: #facc15;
+$danger: #dc2626;
+
+// Atualiza o mapa de cores do tema
+$theme-colors: (
+  "primary": $primary,
+  "secondary": $secondary,
+  "success": $success,
+  "info": $info,
+  "warning": $warning,
+  "danger": $danger,
+  "light": $light,
+  "dark": $dark,
+);
+
+// Importa o restante do Bootstrap já com as variáveis sobrescritas
+@import "bootstrap/scss/bootstrap";
+

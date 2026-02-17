@@ -72,8 +72,8 @@ const statusVariant = (status: string) => {
       </div>
     </section>
 
-    <div class="row g-3 g-md-4">
-      <div class="col-12 col-xl-8">
+    <div class="row g-3 g-md-4 mb-4">
+      <div class="col-12 col-lg-8">
         <AppCard class="h-100" body-class="p-0">
           <template #header>
             <div class="d-flex align-items-center justify-content-between w-100">
@@ -87,11 +87,11 @@ const statusVariant = (status: string) => {
             <AppTable hover>
               <template #thead>
                 <tr>
-                  <th class="py-3 ps-4">Pedido</th>
-                  <th class="py-3">Cliente</th>
-                  <th class="py-3">Valor</th>
-                  <th class="py-3">Status</th>
-                  <th class="py-3 pe-4 text-end">Data</th>
+                  <th class="py-3 ps-4 text-body">Pedido</th>
+                  <th class="py-3 text-body">Cliente</th>
+                  <th class="py-3 text-body">Valor</th>
+                  <th class="py-3 text-body">Status</th>
+                  <th class="py-3 pe-4 text-end text-body">Data</th>
                 </tr>
               </template>
               <template #tbody>
@@ -111,7 +111,7 @@ const statusVariant = (status: string) => {
           </div>
         </AppCard>
       </div>
-      <div class="col-12 col-xl-4">
+      <div class="col-12 col-lg-4">
         <AppCard class="h-100">
           <template #header>
             <h2 class="h6 mb-0 text-body">Atividade recente</h2>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import type { User } from '../domain/user'
+import { listUsers } from '../services/userService'
 import AppPageHeader from '../components/ui/AppPageHeader.vue'
 import AppCard from '../components/ui/AppCard.vue'
 import AppTable from '../components/ui/AppTable.vue'
@@ -13,14 +15,21 @@ const router = useRouter()
 const busca = ref('')
 const currentPage = ref(1)
 const perPage = 10
+const usuarios = ref<User[]>([])
+const loading = ref(false)
+const loadError = ref('')
 
-const usuarios = ref([
-  { id: 1, nome: 'Maria Silva', email: 'maria@exemplo.com', status: 'Ativo' },
-  { id: 2, nome: 'João Santos', email: 'joao@exemplo.com', status: 'Ativo' },
-  { id: 3, nome: 'Ana Costa', email: 'ana@exemplo.com', status: 'Inativo' },
-  { id: 4, nome: 'Pedro Oliveira', email: 'pedro@exemplo.com', status: 'Ativo' },
-  { id: 5, nome: 'Carla Mendes', email: 'carla@exemplo.com', status: 'Ativo' },
-])
+onMounted(async () => {
+  try {
+    loading.value = true
+    usuarios.value = await listUsers()
+  } catch (err) {
+    loadError.value =
+      err instanceof Error ? err.message : 'Não foi possível carregar a lista de usuários.'
+  } finally {
+    loading.value = false
+  }
+})
 
 const filtered = computed(() => {
   if (!busca.value.trim()) return usuarios.value
@@ -57,7 +66,11 @@ function edit(id: number) {
           class="mb-0"
         />
       </div>
-      <AppTable hover :empty-message="'Nenhum usuário encontrado.'" :is-empty="filtered.length === 0">
+      <AppTable
+        hover
+        :empty-message="loadError || 'Nenhum usuário encontrado.'"
+        :is-empty="!loading && filtered.length === 0"
+      >
         <template #thead>
           <tr>
             <th class="py-3 ps-4">Nome</th>
@@ -67,7 +80,12 @@ function edit(id: number) {
           </tr>
         </template>
         <template #tbody>
-          <tr v-for="u in filtered" :key="u.id">
+          <tr v-if="loading">
+            <td colspan="4" class="text-center py-4">
+              Carregando usuários...
+            </td>
+          </tr>
+          <tr v-else v-for="u in filtered" :key="u.id">
             <td class="ps-4 fw-medium">{{ u.nome }}</td>
             <td>{{ u.email }}</td>
             <td>

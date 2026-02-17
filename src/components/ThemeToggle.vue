@@ -34,12 +34,15 @@ function onClick() {
 .theme-toggle-btn {
   background: none;
   border: none;
-  padding: 0.25rem;
+  padding: 0.5rem;
   color: inherit;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  border-radius: 999px;
 }
 
 .theme-toggle-btn:hover .bi,

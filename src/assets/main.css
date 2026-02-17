@@ -1,7 +1,12 @@
 @import './base.css';
 
+html,
 #app {
   min-height: 100vh;
+  background-color: var(--bs-body-bg);
+}
+
+#app {
   font-weight: normal;
 }
 

@@ -46,7 +46,7 @@ function onSubmit() {
 </script>
 
 <template>
-  <div class="min-vh-100 d-flex align-items-center justify-content-center bg-body py-4">
+  <div class="min-vh-100 d-flex align-items-center justify-content-center py-4">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-12 col-sm-10 col-md-8 col-lg-5">

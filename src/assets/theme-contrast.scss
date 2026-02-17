@@ -1,0 +1,48 @@
+// Fonte de verdade para contraste e tema (light/dark) do app.
+// Carregado após theme.scss para sobrescrever variáveis do Bootstrap.
+// Novos tokens de cor devem manter contraste WCAG 2.1 AA; ajustes de tema
+// (body, secundárias, bordas, links, gráficos) devem ser feitos aqui.
+//
+// Regra da paleta: no dark, itens ativos/destaque (ex.: sidebar ativa) usam
+// fundo escuro da cor semântica + texto branco; no light, texto e grade
+// escuros sobre fundo claro.
+
+[data-bs-theme='light'] {
+  --bs-body-color: #1a1a1a;
+  --bs-body-bg: #ffffff;
+  --bs-secondary-color: #4a4a4a;
+  --bs-secondary-bg: #f1f3f5;
+  --bs-tertiary-color: #5c5c5c;
+  --bs-tertiary-bg: #e9ecef;
+  --bs-border-color: #dee2e6;
+  --bs-heading-color: #1a1a1a;
+  --bs-link-color: #4338ca;
+  --bs-link-hover-color: #3730a3;
+  --bs-chart-grid: #94a3b8;
+  --bs-chart-tick: #0f172a;
+}
+
+[data-bs-theme='dark'] {
+  --bs-body-color: #e6edf3;
+  --bs-body-bg: #0d1117;
+  --bs-secondary-color: #adb5bd;
+  --bs-secondary-bg: #21262d;
+  --bs-tertiary-color: #8b949e;
+  --bs-tertiary-bg: #161b22;
+  --bs-border-color: #30363d;
+  --bs-heading-color: #e6edf3;
+  --bs-link-color: #58a6ff;
+  --bs-link-hover-color: #79b8ff;
+  --bs-chart-grid: #484f58;
+  --bs-chart-tick: #e6edf3;
+
+  .dashboard-sidebar .sidebar-nav .nav-link.active {
+    background-color: #4338ca;
+    color: #ffffff;
+  }
+
+  .dashboard-sidebar .sidebar-nav .nav-link.active:hover {
+    background-color: #5b21b6;
+    color: #ffffff;
+  }
+}

@@ -43,13 +43,14 @@ const chartData = computed(() => {
 
 const chartOptions = computed(() => {
   const colors = getBootstrapChartColors()
+  const labelColor = colors.tickColor || colors.bodyColor
   return {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'bottom' as const,
-        labels: { color: colors.bodyColor },
+        labels: { color: labelColor },
       },
     },
   }

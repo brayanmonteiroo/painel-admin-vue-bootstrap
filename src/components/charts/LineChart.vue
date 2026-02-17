@@ -50,7 +50,6 @@ const chartData = computed(() => {
 
 const chartOptions = computed(() => {
   const colors = getBootstrapChartColors()
-  const gridColor = colors.borderColor
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -60,12 +59,12 @@ const chartOptions = computed(() => {
     },
     scales: {
       x: {
-        grid: { color: gridColor },
-        ticks: { color: colors.bodyColor },
+        grid: { color: colors.gridColor },
+        ticks: { color: colors.tickColor },
       },
       y: {
-        grid: { color: gridColor },
-        ticks: { color: colors.bodyColor },
+        grid: { color: colors.gridColor },
+        ticks: { color: colors.tickColor },
       },
     },
   }

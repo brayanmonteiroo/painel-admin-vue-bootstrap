@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import type { ReportFilters } from '../domain/report'
+import { getDashboardReport } from '../services/reportService'
 import AppCard from '../components/ui/AppCard.vue'
 import AppTable from '../components/ui/AppTable.vue'
 import AppFormSelect from '../components/ui/AppFormSelect.vue'
@@ -36,6 +38,29 @@ const dados = ref([
   { data: '14/02/2026', descricao: 'Vendas diretas', valor: 'R$ 15.100,00' },
   { data: '13/02/2026', descricao: 'Assinaturas', valor: 'R$ 7.850,00' },
 ])
+
+const loading = ref(false)
+const loadError = ref('')
+
+async function onGerar() {
+  const filters: ReportFilters = {
+    periodo: periodo.value,
+    tipo: tipo.value,
+  }
+
+  try {
+    loading.value = true
+    loadError.value = ''
+    const result = await getDashboardReport(filters)
+    resumo.value = result.resumo
+    dados.value = result.dados
+  } catch (err) {
+    loadError.value =
+      err instanceof Error ? err.message : 'Não foi possível carregar os relatórios.'
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
@@ -50,7 +75,15 @@ const dados = ref([
         <AppFormSelect v-model="tipo" label="Tipo" :options="tipoOptions" />
       </div>
       <div class="col-12 col-md-4 mb-3">
-        <AppButton variant="primary" icon="search">Gerar</AppButton>
+        <AppButton
+          variant="primary"
+          icon="search"
+          :loading="loading"
+          :disabled="loading"
+          @click="onGerar"
+        >
+          {{ loading ? 'Gerando...' : 'Gerar' }}
+        </AppButton>
       </div>
     </div>
 
@@ -82,11 +115,11 @@ const dados = ref([
       </div>
     </div>
 
-    <AppCard>
+      <AppCard>
       <template #header>
         <h2 class="h6 mb-0 text-body">Detalhamento</h2>
       </template>
-      <AppTable hover>
+      <AppTable hover :empty-message="loadError || 'Nenhum dado encontrado.'" :is-empty="!loading && dados.length === 0">
         <template #thead>
           <tr>
             <th class="py-3">Data</th>
@@ -95,7 +128,12 @@ const dados = ref([
           </tr>
         </template>
         <template #tbody>
-          <tr v-for="row in dados" :key="row.data + row.descricao">
+          <tr v-if="loading">
+            <td colspan="3" class="text-center py-4">
+              Carregando dados...
+            </td>
+          </tr>
+          <tr v-else v-for="row in dados" :key="row.data + row.descricao">
             <td>{{ row.data }}</td>
             <td>{{ row.descricao }}</td>
             <td class="text-end">{{ row.valor }}</td>

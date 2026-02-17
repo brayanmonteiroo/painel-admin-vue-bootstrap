@@ -1,50 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { Dropdown } from 'bootstrap'
 import { useRoute, useRouter } from 'vue-router'
+import { useUiStore } from '../store/ui'
+import { useAuthStore } from '../store/auth'
 import ThemeToggle from '../components/ThemeToggle.vue'
 
 const route = useRoute()
 const router = useRouter()
-const sidebarOpen = ref(false)
-
-const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed'
-const sidebarCollapsed = ref(
-  typeof localStorage !== 'undefined' && localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true'
-)
-
-function sendDebugLog(runId: string, hypothesisId: string, message: string, data: Record<string, unknown>) {
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/c44a3593-60d6-4ab7-9dbc-7c9f9ca5fd5b', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      timestamp: Date.now(),
-      location: 'src/layouts/DashboardLayout.vue',
-      message,
-      data,
-      runId,
-      hypothesisId,
-    }),
-  }).catch(() => {})
-  // #endregion
-}
-
-onMounted(() => {
-  sendDebugLog('run2', 'H-env', 'DashboardLayout mounted', {
-    hasWindow: typeof window !== 'undefined',
-    hasBootstrapOnWindow: typeof window !== 'undefined' && typeof (window as any).bootstrap !== 'undefined',
-    hasDropdownImport: typeof Dropdown === 'function',
-  })
-})
-
-function toggleSidebarCollapse() {
-  sidebarCollapsed.value = !sidebarCollapsed.value
-  localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed.value))
-}
+const uiStore = useUiStore()
+const authStore = useAuthStore()
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: 'speedometer2' },
@@ -71,12 +36,6 @@ function onUserMenuClick(event: MouseEvent) {
   const target = event.currentTarget as HTMLElement | null
   const menu = target?.parentElement?.querySelector('.dropdown-menu')
 
-  sendDebugLog('run2', 'H-click-before', 'Sidebar user menu clicked (before Bootstrap)', {
-    hasTarget: Boolean(target),
-    hasMenu: Boolean(menu),
-    menuClasses: menu?.className ?? null,
-  })
-
   let toggled = false
   if (target) {
     try {
@@ -90,24 +49,31 @@ function onUserMenuClick(event: MouseEvent) {
 
   if (menu) {
     requestAnimationFrame(() => {
-      sendDebugLog('run2', 'H-click-after', 'Sidebar user menu clicked (after potential Bootstrap handling)', {
-        hasMenu: true,
-        menuClasses: menu.className,
-        toggled,
-      })
+      // apenas para evitar otimizações agressivas enquanto o template é simples
+      void toggled
     })
   }
 }
 
 const pageTitle = computed(() => (route.meta?.title as string) ?? 'Dashboard')
 
-const isActive = (path: string) => route.path === path || (path !== '/dashboard' && route.path.startsWith(path + '/'))
+const isActive = (path: string) =>
+  route.path === path || (path !== '/dashboard' && route.path.startsWith(path + '/'))
+
+function toggleSidebarCollapse() {
+  uiStore.toggleSidebarCollapse()
+}
 
 function closeSidebar() {
-  sidebarOpen.value = false
+  uiStore.closeSidebar()
+}
+
+function openSidebar() {
+  uiStore.openSidebar()
 }
 
 function logout() {
+  authStore.logout()
   router.push({ name: 'login' })
 }
 </script>
@@ -117,7 +83,7 @@ function logout() {
     <aside
       id="dashboard-sidebar"
       class="dashboard-sidebar border-end bg-body flex-shrink-0"
-      :class="{ 'sidebar-open': sidebarOpen, 'sidebar-collapsed': sidebarCollapsed }"
+      :class="{ 'sidebar-open': uiStore.sidebarOpen, 'sidebar-collapsed': uiStore.sidebarCollapsed }"
     >
       <div class="sidebar-header dashboard-header-bar d-flex align-items-center justify-content-between p-3 border-bottom">
         <span class="fw-bold text-body d-flex align-items-center overflow-hidden min-w-0">
@@ -130,10 +96,10 @@ function logout() {
           <button
             type="button"
             class="btn btn-link d-none d-lg-inline-block p-0 text-body"
-            :aria-label="sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'"
+            :aria-label="uiStore.sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'"
             @click="toggleSidebarCollapse"
           >
-            <i :class="sidebarCollapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left'"></i>
+            <i :class="uiStore.sidebarCollapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left'"></i>
           </button>
           <button
             type="button"
@@ -152,7 +118,7 @@ function logout() {
               :to="item.path"
               class="nav-link d-flex align-items-center rounded-2"
               :class="{ active: isActive(item.path) }"
-              :title="sidebarCollapsed ? item.name : undefined"
+              :title="uiStore.sidebarCollapsed ? item.name : undefined"
               @click="closeSidebar"
             >
               <i :class="`bi bi-${item.icon} sidebar-icon flex-shrink-0 me-2`" style="font-size: 1.1rem"></i>
@@ -160,14 +126,14 @@ function logout() {
             </router-link>
           </li>
         </ul>
-        <div v-if="!sidebarCollapsed" class="sidebar-label small text-body-secondary text-uppercase px-2 mt-3 mb-1">Autenticação</div>
+        <div v-if="!uiStore.sidebarCollapsed" class="sidebar-label small text-body-secondary text-uppercase px-2 mt-3 mb-1">Autenticação</div>
         <ul class="nav flex-column">
           <li v-for="item in authItems" :key="item.path" class="nav-item">
             <router-link
               :to="item.path"
               class="nav-link d-flex align-items-center rounded-2"
               :class="{ active: route.path === item.path }"
-              :title="sidebarCollapsed ? item.name : undefined"
+              :title="uiStore.sidebarCollapsed ? item.name : undefined"
               @click="closeSidebar"
             >
               <i :class="`bi bi-${item.icon} sidebar-icon flex-shrink-0 me-2`" style="font-size: 1.1rem"></i>
@@ -175,14 +141,14 @@ function logout() {
             </router-link>
           </li>
         </ul>
-        <div v-if="!sidebarCollapsed" class="sidebar-label small text-body-secondary text-uppercase px-2 mt-3 mb-1">Erros</div>
+        <div v-if="!uiStore.sidebarCollapsed" class="sidebar-label small text-body-secondary text-uppercase px-2 mt-3 mb-1">Erros</div>
         <ul class="nav flex-column">
           <li v-for="item in errorItems" :key="item.path" class="nav-item">
             <router-link
               :to="item.path"
               class="nav-link d-flex align-items-center rounded-2"
               :class="{ active: route.path === item.path }"
-              :title="sidebarCollapsed ? item.name : undefined"
+              :title="uiStore.sidebarCollapsed ? item.name : undefined"
               @click="closeSidebar"
             >
               <i :class="`bi bi-${item.icon} sidebar-icon flex-shrink-0 me-2`" style="font-size: 1.1rem"></i>
@@ -221,7 +187,7 @@ function logout() {
       </div>
     </aside>
 
-    <div class="dashboard-overlay d-lg-none" :class="{ show: sidebarOpen }" @click="closeSidebar" aria-hidden="true" />
+    <div class="dashboard-overlay d-lg-none" :class="{ show: uiStore.sidebarOpen }" @click="closeSidebar" aria-hidden="true" />
 
     <main class="dashboard-main flex-grow-1 d-flex flex-column min-vh-100">
       <header class="dashboard-header dashboard-header-bar border-bottom bg-body py-3 px-3 px-md-4">
@@ -230,7 +196,7 @@ function logout() {
             type="button"
             class="btn btn-link d-lg-none p-0 text-body me-2 flex-shrink-0"
             aria-label="Abrir menu"
-            @click="sidebarOpen = true"
+            @click="openSidebar"
           >
             <i class="bi bi-list" style="font-size: 1.5rem"></i>
           </button>
@@ -256,6 +222,16 @@ function logout() {
 <style scoped>
 .dashboard-wrapper {
   background-color: var(--bs-body-bg);
+  width: 100%;
+  max-width: 100vw;
+}
+
+.dashboard-main {
+  min-width: 0;
+}
+
+.dashboard-content {
+  min-width: 0;
 }
 
 .dashboard-header-bar {

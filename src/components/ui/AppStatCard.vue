@@ -24,10 +24,10 @@ withDefaults(
         <div
           v-if="icon"
           class="rounded-3 d-flex align-items-center justify-content-center bg-opacity-10 flex-shrink-0"
-          :class="`bg-${variant}`"
+          :class="[`bg-${variant}`, `text-${variant}`]"
           style="width: 48px; height: 48px"
         >
-          <i :class="`bi bi-${icon} text-body-secondary`" style="font-size: 1.25rem"></i>
+          <i :class="`bi bi-${icon}`" style="font-size: 1.25rem"></i>
         </div>
       </div>
     </div>

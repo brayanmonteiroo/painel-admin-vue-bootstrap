@@ -1,18 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '../store/auth'
+import { useUiStore } from '../store/ui'
 import AppCard from '../components/ui/AppCard.vue'
 import AppFormInput from '../components/ui/AppFormInput.vue'
 import AppButton from '../components/ui/AppButton.vue'
 import AppAlert from '../components/ui/AppAlert.vue'
 
+const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
+const uiStore = useUiStore()
 const email = ref('')
 const password = ref('')
-const loading = ref(false)
 const errorMessage = ref('')
 
-function onSubmit() {
+const loading = computed(() => authStore.loading)
+
+async function onSubmit() {
   errorMessage.value = ''
   if (!email.value.trim()) {
     errorMessage.value = 'Informe o e-mail.'
@@ -23,19 +29,29 @@ function onSubmit() {
     return
   }
 
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-    router.push({ name: 'dashboard' })
-  }, 800)
+  try {
+    await authStore.login(email.value, password.value)
+    uiStore.pushNotification('Login realizado com sucesso!', 'success')
+    const redirect = (route.query.redirect as string | undefined) ?? undefined
+    if (redirect) {
+      router.push(redirect)
+    } else {
+      router.push({ name: 'dashboard' })
+    }
+  } catch (err) {
+    if (!errorMessage.value) {
+      errorMessage.value =
+        err instanceof Error ? err.message : 'Não foi possível fazer login. Tente novamente.'
+    }
+  }
 }
 </script>
 
 <template>
-  <div class="login-page min-vh-100 d-flex align-items-center justify-content-center bg-body py-4">
+  <div class="login-page min-vh-100 d-flex align-items-center justify-content-center py-4">
     <div class="container">
       <div class="row justify-content-center">
-        <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-4">
           <AppCard body-class="p-4 p-md-5">
             <h1 class="h4 card-title text-center mb-4">Entrar</h1>
 

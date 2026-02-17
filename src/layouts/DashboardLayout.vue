@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { Dropdown } from 'bootstrap'
 import { useRoute, useRouter } from 'vue-router'
 import ThemeToggle from '../components/ThemeToggle.vue'
 
@@ -11,6 +12,34 @@ const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed'
 const sidebarCollapsed = ref(
   typeof localStorage !== 'undefined' && localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true'
 )
+
+function sendDebugLog(runId: string, hypothesisId: string, message: string, data: Record<string, unknown>) {
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/c44a3593-60d6-4ab7-9dbc-7c9f9ca5fd5b', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      timestamp: Date.now(),
+      location: 'src/layouts/DashboardLayout.vue',
+      message,
+      data,
+      runId,
+      hypothesisId,
+    }),
+  }).catch(() => {})
+  // #endregion
+}
+
+onMounted(() => {
+  sendDebugLog('run2', 'H-env', 'DashboardLayout mounted', {
+    hasWindow: typeof window !== 'undefined',
+    hasBootstrapOnWindow: typeof window !== 'undefined' && typeof (window as any).bootstrap !== 'undefined',
+    hasDropdownImport: typeof Dropdown === 'function',
+  })
+})
 
 function toggleSidebarCollapse() {
   sidebarCollapsed.value = !sidebarCollapsed.value
@@ -37,6 +66,38 @@ const errorItems = [
   { name: '403 Acesso negado', path: '/403', icon: 'shield-lock' },
   { name: '500 Erro do servidor', path: '/500', icon: 'exclamation-octagon' },
 ]
+
+function onUserMenuClick(event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement | null
+  const menu = target?.parentElement?.querySelector('.dropdown-menu')
+
+  sendDebugLog('run2', 'H-click-before', 'Sidebar user menu clicked (before Bootstrap)', {
+    hasTarget: Boolean(target),
+    hasMenu: Boolean(menu),
+    menuClasses: menu?.className ?? null,
+  })
+
+  let toggled = false
+  if (target) {
+    try {
+      const instance = Dropdown.getOrCreateInstance(target)
+      instance.toggle()
+      toggled = true
+    } catch {
+      toggled = false
+    }
+  }
+
+  if (menu) {
+    requestAnimationFrame(() => {
+      sendDebugLog('run2', 'H-click-after', 'Sidebar user menu clicked (after potential Bootstrap handling)', {
+        hasMenu: true,
+        menuClasses: menu.className,
+        toggled,
+      })
+    })
+  }
+}
 
 const pageTitle = computed(() => (route.meta?.title as string) ?? 'Dashboard')
 
@@ -135,6 +196,7 @@ function logout() {
           <button
             class="btn btn-sm w-100 d-flex align-items-center justify-content-center sidebar-user-btn"
             type="button"
+            @click="onUserMenuClick"
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >

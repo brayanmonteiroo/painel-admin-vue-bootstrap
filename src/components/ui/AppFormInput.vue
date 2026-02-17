@@ -9,7 +9,7 @@ const props = defineProps<{
   error?: string
   hint?: string
   id?: string
-  type?: string
+  type?: HTMLInputElement['type']
 }>()
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
@@ -23,8 +23,8 @@ function togglePasswordVisibility() {
   passwordVisible.value = !passwordVisible.value
 }
 
-const effectiveType = computed(() => {
-  if (!isPassword.value) return (props.type ?? attrs.type) ?? 'text'
+const effectiveType = computed<HTMLInputElement['type']>(() => {
+  if (!isPassword.value) return (props.type ?? (attrs.type as HTMLInputElement['type'] | undefined)) ?? 'text'
   return passwordVisible.value ? 'text' : 'password'
 })
 

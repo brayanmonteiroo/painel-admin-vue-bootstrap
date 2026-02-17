@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { ReportFilters } from '../domain/report'
+import type { ReportFilters, ReportSummaryCard } from '../domain/report'
 import { getDashboardReport } from '../services/reportService'
 import AppCard from '../components/ui/AppCard.vue'
 import AppTable from '../components/ui/AppTable.vue'
@@ -26,10 +26,10 @@ const tipoOptions = [
   { value: 'pedidos', label: 'Pedidos' },
 ]
 
-const resumo = ref([
-  { label: 'Total de vendas', value: 'R$ 128.450,00', variant: 'success' as const },
-  { label: 'Pedidos', value: '342', variant: 'primary' as const },
-  { label: 'Ticket médio', value: 'R$ 375,58', variant: 'info' as const },
+const resumo = ref<ReportSummaryCard[]>([
+  { label: 'Total de vendas', value: 'R$ 128.450,00', variant: 'success' },
+  { label: 'Pedidos', value: '342', variant: 'primary' },
+  { label: 'Ticket médio', value: 'R$ 375,58', variant: 'info' },
 ])
 
 const dados = ref([

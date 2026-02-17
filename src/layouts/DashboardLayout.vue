@@ -190,7 +190,7 @@ function logout() {
     <div class="dashboard-overlay d-lg-none" :class="{ show: uiStore.sidebarOpen }" @click="closeSidebar" aria-hidden="true" />
 
     <main class="dashboard-main flex-grow-1 d-flex flex-column min-vh-100">
-      <header class="dashboard-header dashboard-header-bar border-bottom bg-body py-3 px-3 px-md-4">
+      <header class="dashboard-header dashboard-header-bar border-bottom bg-body py-2 px-3 px-md-4">
         <div class="d-flex align-items-center justify-content-between gap-2">
           <button
             type="button"

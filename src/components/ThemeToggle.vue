@@ -11,33 +11,26 @@ const options = [
   { value: 'auto' as const, label: 'Auto', icon: 'bi-circle-half' },
 ]
 
-const currentIcon = computed(() =>
-  mode.value === 'dark' || (mode.value === 'auto' && isDark.value)
-    ? 'bi-moon-stars-fill'
-    : mode.value === 'auto'
-    ? 'bi-circle-half'
-    : 'bi-sun-fill'
-)
+const currentIcon = computed(() => {
+  if (mode.value === 'auto') return 'bi-circle-half'
+  return mode.value === 'dark' ? 'bi-moon-stars-fill' : 'bi-sun-fill'
+})
+
+const iconColor = computed(() => {
+  // color for icon and caret: black in light, white in dark; auto follows effective theme
+  const dark = mode.value === 'auto' ? isDark.value : mode.value === 'dark'
+  return dark ? '#ffffff' : '#000000'
+})
 
 const btnRef = ref<HTMLElement | null>(null)
-let dropdownInstance: any = null
-const iconRef = ref<HTMLElement | null>(null)
-const DEBUG = true
-
-function toggleDropdownManual() {
-  console.log('ThemeToggle: manual toggle called')
-  if (dropdownInstance) {
-    dropdownInstance.toggle()
-  }
-}
+let dropdownInstance: ReturnType<typeof Dropdown.getOrCreateInstance> | null = null
 
 onMounted(() => {
   if (btnRef.value) {
     try {
       dropdownInstance = Dropdown.getOrCreateInstance(btnRef.value)
-    } catch (e) {
+    } catch {
       // ignore
-      console.warn('ThemeToggle: bootstrap Dropdown init failed', e)
     }
   }
 })
@@ -52,87 +45,13 @@ onUnmounted(() => {
   }
 })
 
-function highlightRect(rect: DOMRect, color = 'red') {
-  const d = document.createElement('div')
-  d.style.position = 'fixed'
-  d.style.left = rect.left + 'px'
-  d.style.top = rect.top + 'px'
-  d.style.width = rect.width + 'px'
-  d.style.height = rect.height + 'px'
-  d.style.border = `2px solid ${color}`
-  d.style.zIndex = '99999'
-  d.style.pointerEvents = 'none'
-  document.body.appendChild(d)
-  setTimeout(() => d.remove(), 1500)
-}
-
-function logComputedStyles(el: Element | null) {
-  if (!el) return
-  const s = window.getComputedStyle(el)
-  return {
-    display: s.display,
-    position: s.position,
-    lineHeight: s.lineHeight,
-    verticalAlign: s.verticalAlign,
-    transform: s.transform,
-    pointerEvents: s.pointerEvents,
-    zIndex: s.zIndex,
-  }
-}
-
-function onButtonClick(e: MouseEvent) {
-  if (!DEBUG) return
+function onButtonClick() {
   try {
-    console.log('ThemeToggle: click event', e.type, { clientX: e.clientX, clientY: e.clientY })
-
-    const btn = btnRef.value
-    const icon = iconRef.value
-
-    console.log('ThemeToggle: button element', btn)
-    console.log('ThemeToggle: icon element', icon)
-
-    const btnRect = btn?.getBoundingClientRect()
-    const iconRect = icon?.getBoundingClientRect()
-    if (btnRect) {
-      console.log('ThemeToggle: button rect', btnRect)
-      highlightRect(btnRect, 'lime')
-    }
-    if (iconRect) {
-      console.log('ThemeToggle: icon rect', iconRect)
-      highlightRect(iconRect, 'cyan')
-    }
-
-    const elAtPoint = document.elementFromPoint(e.clientX, e.clientY)
-    console.log('ThemeToggle: elementFromPoint', elAtPoint)
-    if (elAtPoint instanceof Element) {
-      highlightRect(elAtPoint.getBoundingClientRect(), 'orange')
-    }
-
-    console.log('ThemeToggle: computed styles button', logComputedStyles(btn))
-    console.log('ThemeToggle: computed styles icon', logComputedStyles(icon))
-
-    // Try to toggle via bootstrap instance if available
     if (dropdownInstance && typeof dropdownInstance.toggle === 'function') {
-      console.log('ThemeToggle: toggling via bootstrap instance')
       dropdownInstance.toggle()
-      return
     }
-
-    // Fallback: toggle .show class on menu
-    const menu = btn?.parentElement?.querySelector('.dropdown-menu') as HTMLElement | null
-    if (menu) {
-      const isShown = menu.classList.contains('show')
-      if (isShown) {
-        menu.classList.remove('show')
-        btn?.setAttribute('aria-expanded', 'false')
-      } else {
-        menu.classList.add('show')
-        btn?.setAttribute('aria-expanded', 'true')
-      }
-      console.log('ThemeToggle: toggled menu fallback', menu)
-    }
-  } catch (err) {
-    console.error('ThemeToggle: diagnostic failed', err)
+  } catch {
+    // ignore
   }
 }
 </script>
@@ -148,8 +67,9 @@ function onButtonClick(e: MouseEvent) {
       aria-label="Toggle theme"
       title="Toggle theme"
       @click="onButtonClick"
+      :style="{ color: iconColor }"
     >
-      <i ref="iconRef" :class="['bi', currentIcon]" aria-hidden="true"></i>
+      <i :class="['bi', currentIcon]" aria-hidden="true"></i>
     </button>
 
     <ul class="dropdown-menu dropdown-menu-end shadow-sm" role="menu" aria-label="Theme options">
@@ -208,6 +128,16 @@ function onButtonClick(e: MouseEvent) {
 .dropdown-item:hover {
   background-color: var(--bs-secondary-bg);
 }
+
+.dropdown-item:focus {
+  outline: none;
+}
+
+.dropdown-item:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: -2px;
+}
+
 .dropdown-menu {
   z-index: 2100;
 }

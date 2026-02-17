@@ -1,0 +1,26 @@
+@import './base.css';
+
+#app {
+  min-height: 100vh;
+  font-weight: normal;
+}
+
+a {
+  text-decoration: none;
+  color: var(--bs-link-color);
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--bs-link-hover-color);
+}
+
+::selection {
+  background: var(--bs-primary);
+  color: var(--bs-white, #fff);
+}
+
+::-moz-selection {
+  background: var(--bs-primary);
+  color: var(--bs-white, #fff);
+}

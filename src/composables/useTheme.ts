@@ -1,5 +1,6 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
+type ThemeMode = 'light' | 'dark' | 'auto'
 const THEME_KEY = 'bs-theme'
 
 function getSystemTheme(): 'light' | 'dark' {
@@ -7,35 +8,56 @@ function getSystemTheme(): 'light' | 'dark' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
-function getStoredTheme(): 'light' | 'dark' | null {
-  if (typeof window === 'undefined') return null
+function getStoredMode(): ThemeMode {
+  if (typeof window === 'undefined') return 'auto'
   const v = localStorage.getItem(THEME_KEY)
-  return v === 'dark' || v === 'light' ? v : null
+  if (v === 'light' || v === 'dark' || v === 'auto') return v
+  return 'auto'
 }
 
-function applyTheme(theme: 'light' | 'dark') {
-  document.documentElement.setAttribute('data-bs-theme', theme)
-  localStorage.setItem(THEME_KEY, theme)
+function applyTheme(effective: 'light' | 'dark') {
+  document.documentElement.setAttribute('data-bs-theme', effective)
 }
 
-const isDark = ref(
-  (() => {
-    const stored = getStoredTheme()
-    if (stored) return stored === 'dark'
-    return getSystemTheme() === 'dark'
-  })()
+const mode = ref<ThemeMode>(getStoredMode())
+
+const effectiveTheme = computed<'light' | 'dark'>(() =>
+  mode.value === 'auto' ? getSystemTheme() : mode.value
 )
 
+const isDark = computed(() => effectiveTheme.value === 'dark')
+
+// apply initial effective theme immediately
+applyTheme(effectiveTheme.value)
+
+if (typeof window !== 'undefined') {
+  const mq = window.matchMedia('(prefers-color-scheme: dark)')
+  mq.addEventListener('change', () => {
+    if (mode.value === 'auto') {
+      applyTheme(getSystemTheme())
+    }
+  })
+}
+
 export function useTheme() {
+  function setMode(newMode: ThemeMode) {
+    mode.value = newMode
+    try {
+      localStorage.setItem(THEME_KEY, newMode)
+    } catch {
+      /* ignore write errors */
+    }
+    applyTheme(effectiveTheme.value)
+  }
+
   function setTheme(dark: boolean) {
-    const theme = dark ? 'dark' : 'light'
-    isDark.value = dark
-    applyTheme(theme)
+    setMode(dark ? 'dark' : 'light')
   }
 
   function toggle() {
     setTheme(!isDark.value)
   }
 
-  return { isDark, setTheme, toggle }
+  return { mode, isDark, effectiveTheme, setMode, setTheme, toggle }
 }
+

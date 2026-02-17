@@ -1,6 +1,12 @@
 const stored = localStorage.getItem('bs-theme')
 const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-const theme = stored === 'dark' || (!stored && prefersDark) ? 'dark' : 'light'
+let theme: 'light' | 'dark'
+if (stored === 'light' || stored === 'dark') {
+  theme = stored
+} else {
+  // 'auto' or not set => follow system preference
+  theme = prefersDark ? 'dark' : 'light'
+}
 document.documentElement.setAttribute('data-bs-theme', theme)
 
 import './assets/main.css'

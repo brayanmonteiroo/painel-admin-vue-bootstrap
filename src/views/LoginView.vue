@@ -48,12 +48,19 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="login-page min-vh-100 d-flex align-items-center justify-content-center py-4">
+  <div class="login-page d-flex align-items-center justify-content-center flex-grow-1 py-3">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-4">
           <AppCard body-class="p-4 p-md-5">
-            <h1 class="h4 card-title text-center mb-4">Entrar</h1>
+            <h1 class="h4 card-title text-center mb-3">Entrar</h1>
+            <!-- texto de informação com cor chamativa-->
+            <div class="alert alert-info text-body-secondary small text-center mb-4" role="alert">
+              <p class="mb-0">
+                Use qualquer e-mail e uma senha numérica
+                (por exemplo, <strong>123</strong>) para acessar.
+              </p>
+            </div>
 
             <form @submit.prevent="onSubmit" novalidate>
               <AppAlert v-if="errorMessage" variant="danger" dismissible @dismiss="errorMessage = ''">
@@ -102,8 +109,3 @@ async function onSubmit() {
   </div>
 </template>
 
-<style scoped>
-.login-page {
-  min-height: 100vh;
-}
-</style>
